@@ -1,5 +1,8 @@
 package com.example.controller;
 import org.springframework.stereotype.Controller;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,24 +30,16 @@ public class SocialMediaController {
 
     @Autowired
     private MessageService messageService;
-
-    public SocialMediaController(AccountService accountService){
-        this.accountService = accountService;
-    }
-
-    public SocialMediaController(MessageService messageService){
-        this.messageService = messageService;
-    }
     
     @PostMapping("/register")
-    public ResponseEntity<Account> postRegisterHandler(@RequestBody Account account) {
+    public ResponseEntity<Object> postRegisterHandler(@RequestBody Account account) {
         
         Account registeredAccount = accountService.registerAccount(account);
-        try{
-            return ResponseEntity.ok(registeredAccount);
-        } catch(Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+        if (registeredAccount == null) {
+            return ResponseEntity.status(409).build();
+         }
+
+         return ResponseEntity.ok(registeredAccount);
     
     
     }
@@ -59,22 +54,52 @@ public class SocialMediaController {
         
     }
     @PostMapping("/messages")
-    public ResponseEntity<Message> createMessage(@RequestBody Message message) {
+    public ResponseEntity<Message> createMessageHandler (@RequestBody Message message) {
         
+        Message created  = messageService.createMessage(message);
 
-            // Add the message using the service
-            Message addedMessage = messageService.addMessage(message);
-
-            if (addedMessage != null) {
-                // Convert the added message to JSON string
-                return ResponseEntity.ok(addedMessage);
-            } else {
-                // Return 400 Bad Request if message creation fails
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-        
-        
+        if (created == null) {
+            
+            return ResponseEntity.status(400).build();
+        } 
+            
+            return ResponseEntity.ok(created);      
     }
+    @GetMapping("/messages")
+    public ResponseEntity <List<Message>> getAllMessage(){
+        return ResponseEntity.ok(messageService.getAllMessages());
+    }
+    @GetMapping ("/messages/{messageId}")
+    public ResponseEntity<Message>getMessageById(@PathVariable Integer messageId){
+        return ResponseEntity.ok(messageService.getMessageById(messageId));
+    } 
+    @GetMapping ("accounts/{accountId}/messages")
+    public ResponseEntity<List<Message>> getMessagesByUser(@PathVariable Integer accountId){
+        return ResponseEntity.ok(messageService.getMessagesByUser(accountId));
+    }  
+   
+    
+    @DeleteMapping ("/messages/{messageId}")
+    public ResponseEntity<Integer>deleteMessageHandler(@PathVariable int messageId){
+        int deleted = messageService.deleteMessage(messageId);
+        if( deleted == 0) {
+            return ResponseEntity.ok().build();
+        }
+        
+        return ResponseEntity.ok(deleted);
+
+    }
+    @PatchMapping ("/messages/{messageId}")
+    public ResponseEntity<Integer> updateMessageHandler(@PathVariable int messageId, @RequestBody Message messageText) {
+            try {          
+                Integer updatedMessage = messageService.updateMessage(messageId,messageText.getMessageText());
+                return ResponseEntity.ok(updatedMessage);
+            } catch(IllegalArgumentException e) {
+                return ResponseEntity.status(400).body(null);
+            } 
+
+        }
+    
     
    
 }

@@ -5,11 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MessageRepository extends JpaRepository<Message, Integer> {
 
-    List<Message> findAllByPosted_by(Integer posted_by);
+    List<Message> findAllByPostedBy(Integer posted_by);
 
-    Message insertMessage(Message message);
+    //Message insertMessage(Message message);
 
-    void deleteMessage(int id);
+    //void deleteMessage(int id);
 
-    List<Message> getAllMessages();
+    //List<Message> getAllMessages();
 }
